@@ -97,14 +97,14 @@ const SearchComponent = () => {
       return;
     }
 
-    const apiUrl = process.env.REACT_APP_API_URL;
+    // const apiUrl = process.env.REACT_APP_API_URL;
     // const apiUrl = "http://localhost:3004/api";
 
     // Se a URL é válida, faz a busca...
     setLoading(true);
     try {
       const response = await axios.post(
-        apiUrl + "/scrape",
+        "https://nimbus-data.vercel.app/api/scrape",
         {
           url,
         },
