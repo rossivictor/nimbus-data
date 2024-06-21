@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     console.log('Browser launched');
+    
     const page = await browser.newPage();
+    console.log('New page created');
+
     console.log('Navigating to page...');
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
     console.log('Page loaded');
