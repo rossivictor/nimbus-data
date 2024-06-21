@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "preinstall": "npx puppeteer install",
+    "postinstall": "npx puppeteer install",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
