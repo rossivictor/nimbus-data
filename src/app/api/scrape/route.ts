@@ -7,9 +7,18 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
+    // Verificar se o Chrome está instalado corretamente
+    const executablePath = await puppeteer.executablePath();
+    console.log(`Chromium executable path: ${executablePath}`);
+
+    if (!executablePath) {
+      throw new Error('Could not find Chromium executable path.');
+    }
+
     console.log('Launching browser...');
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: executablePath,
       headless: true,
     });
     console.log('Browser launched');
