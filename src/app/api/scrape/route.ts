@@ -8,9 +8,12 @@ export async function POST(req: NextRequest) {
     console.log(`URL recebida: ${url}`);
 
     const executablePath = await chromium.executablePath;
+
     if (!executablePath) {
       throw new Error('Could not find Chromium executable path.');
     }
+
+    console.log(`Chromium executable path: ${executablePath}`);
 
     console.log('Launching browser...');
     const browser = await puppeteer.launch({
@@ -52,7 +55,7 @@ export async function POST(req: NextRequest) {
       const anchors = Array.from(document.querySelectorAll('a'));
       const socialLinks = {
         facebook: anchors.filter(anchor => anchor.href.includes('facebook.com')).map(anchor => anchor.href),
-        instagram: anchors.filter(anchor => anchor.href.includes('instagram.com')). map(anchor => anchor.href),
+        instagram: anchors.filter(anchor => anchor.href.includes('instagram.com')).map(anchor => anchor.href),
         linkedin: anchors.filter(anchor => anchor.href.includes('linkedin.com')).map(anchor => anchor.href),
         youtube: anchors.filter(anchor => anchor.href.includes('youtube.com')).map(anchor => anchor.href),
         twitter: anchors.filter(anchor => anchor.href.includes('twitter.com')).map(anchor => anchor.href),
