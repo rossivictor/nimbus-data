@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
-    // Verificando o caminho do executável do Chromium
+    // Garantir que o caminho do executável é resolvido corretamente
     const executablePath = await chromium.executablePath;
 
     if (!executablePath) {
@@ -17,7 +17,9 @@ export async function POST(req: NextRequest) {
 
     console.log(`Chromium executable path: ${executablePath}`);
 
-    // Iniciando o navegador
+    // Esperar um pequeno tempo antes de iniciar o navegador para garantir que o caminho está disponível
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     console.log('Launching browser...');
     browser = await puppeteer.launch({
       args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
@@ -33,7 +35,6 @@ export async function POST(req: NextRequest) {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
     console.log('Page loaded');
 
-    // Extraindo dados
     const phones = await page.evaluate(() => {
       const phoneRegex = /\(?\d{2}\)?\s?\d{4,5}-?\d{4}/g;
       const matches = document.body && document.body.innerText.match(phoneRegex);
