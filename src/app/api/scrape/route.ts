@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
 import chromium from 'chrome-aws-lambda';
+import fs from 'fs';
+import util from 'util';
+
+const chmod = util.promisify(fs.chmod);
 
 export async function POST(req: NextRequest) {
   let browser = null;
@@ -16,6 +20,10 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`Chromium executable path: ${executablePath}`);
+
+    // Ajustar permissões do executável para garantir que ele não está bloqueado
+    await chmod(executablePath, 0o755);
+    console.log('Permissions adjusted for Chromium executable');
 
     // Esperar um pequeno tempo antes de iniciar o navegador para garantir que o caminho está disponível
     await new Promise(resolve => setTimeout(resolve, 1000));
