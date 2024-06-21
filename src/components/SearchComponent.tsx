@@ -97,7 +97,7 @@ const SearchComponent = () => {
       return;
     }
 
-    const apiUrl = process.env.REACT_APP_API_URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
     // const apiUrl = "http://localhost:3004/api";
 
     // Se a URL é válida, faz a busca...
