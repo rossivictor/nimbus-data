@@ -7,7 +7,8 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
-    const executablePath = await chromium.executablePath;
+    // Defina o caminho do executável explicitamente
+    const executablePath = process.env.CHROME_EXECUTABLE_PATH || await chromium.executablePath;
 
     if (!executablePath) {
       throw new Error('Could not find Chromium executable path.');
