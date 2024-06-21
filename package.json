@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "postinstall": "npx chrome-aws-lambda install",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
