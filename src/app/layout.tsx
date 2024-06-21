@@ -15,7 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-br">
+      <head>
+        <meta charSet="UTF-8" />
+        <link rel="icon" type="image/png" href="/nimbus-icon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Nimbus Data | Varredura e captura de dados de empresas em segundos!</title>
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   );
