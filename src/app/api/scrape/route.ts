@@ -3,11 +3,12 @@ import puppeteer from 'puppeteer-core';
 import chromium from 'chrome-aws-lambda';
 
 export async function POST(req: NextRequest) {
+  let browser = null;
   try {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
-    const executablePath = await chromium.executablePath || '/var/task/node_modules/chrome-aws-lambda/bin/chromium';
+    const executablePath = await chromium.executablePath;
 
     if (!executablePath) {
       throw new Error('Could not find Chromium executable path.');
@@ -16,14 +17,13 @@ export async function POST(req: NextRequest) {
     console.log(`Chromium executable path: ${executablePath}`);
 
     console.log('Launching browser...');
-    const browser = await puppeteer.launch({
-      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
+    browser = await puppeteer.launch({
+      args: chromium.args,
       executablePath: executablePath,
-      headless: true,
-      defaultViewport: chromium.defaultViewport,
+      headless: chromium.headless,
     });
     console.log('Browser launched');
-    
+
     const page = await browser.newPage();
     console.log('New page created');
 
@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error:', error.message);
+    if (browser) {
+      await browser.close();
+    }
     return NextResponse.json({
       status: 'error',
       message: 'A URL é inválida ou está fora do ar. Por favor, tente novamente.',
