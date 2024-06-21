@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import { GiMagicBroom } from "react-icons/gi";
 import { IconContext } from "react-icons";
 import {
@@ -96,39 +97,42 @@ const SearchComponent = () => {
       return;
     }
 
-    // const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = process.env.REACT_APP_API_URL
     // const apiUrl = "http://localhost:3004/api";
 
     // Se a URL é válida, faz a busca...
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://nimbus-data.vercel.app/api/scrape",
+      const response = await axios.post(
+        apiUrl + "/scrape",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url,
-          }),
+          url,
+        },
+        {
+          timeout: 60000,
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Verifica se a resposta está ok
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`A URL retornou um erro: ${response.status}`);
       }
 
-      const data = await response.json();
+      // Verifica se a resposta tem dados
+      if (!response.data || Object.keys(response.data).length === 0) {
+        throw new Error("A URL não retornou dados.");
+      }
+
+      console.log('response.data:', response.data)
 
       // Processa os dados...
-      const uniquePhones: string[] = Array.from(new Set(data.phones || []));
+      const uniquePhones: string[] = Array.from(new Set(response.data.phones || []));
 
       let uniqueWhatsAppLinks: { link: string; phone: string }[] = [];
       let seenPhones: { [key: string]: boolean } = {};
 
-      if (data.whatsAppLinks) {
-        data.whatsAppLinks.forEach(
+      if (response.data.whatsAppLinks) {
+        response.data.whatsAppLinks.forEach(
           (item: { link: string; phone: string }) => {
             if (!seenPhones[item.phone]) {
               uniqueWhatsAppLinks.push(item);
@@ -140,15 +144,15 @@ const SearchComponent = () => {
 
       console.log('uniqueWhatsAppLinks:', uniqueWhatsAppLinks)
 
-      const uniqueEmails: string[] = Array.from(new Set(data.emails || []));
+      const uniqueEmails: string[] = Array.from(new Set(response.data.emails || []));
 
       let uniqueSocialMediaLinks: { [key: string]: string[] } = {};
-      if (data.socialMedia) {
-        uniqueSocialMediaLinks = Object.keys(data.socialMedia).reduce(
+      if (response.data.socialMedia) {
+        uniqueSocialMediaLinks = Object.keys(response.data.socialMedia).reduce(
           (unique: { [key: string]: string[] }, key: string) => {
 
             unique[key] = Array.from(
-              new Set(data.socialMedia[key] || [])
+              new Set(response.data.socialMedia[key] || [])
             );
             return unique;
           },
@@ -157,7 +161,7 @@ const SearchComponent = () => {
       }
 
       // company name
-      setCompanyName(data.title);
+      setCompanyName(response.data.title);
 
       setPhones(uniquePhones);
       setWhatsAppLinks(uniqueWhatsAppLinks);
