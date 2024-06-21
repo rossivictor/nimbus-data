@@ -9,9 +9,6 @@ export async function POST(req: NextRequest) {
     console.log('Launching browser...');
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      executablePath: process.env.VERCEL ? '/usr/bin/google-chrome-stable' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      headless: true,
-      timeout: 60000,
     });
     console.log('Browser launched');
     const page = await browser.newPage();
