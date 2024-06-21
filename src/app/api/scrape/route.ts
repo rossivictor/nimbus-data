@@ -2,40 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 
 export async function POST(req: NextRequest) {
-  const { url } = await req.json();
-
   try {
+    const { url } = await req.json();
+    console.log(`URL recebida: ${url}`);
+
+    console.log('Launching browser...');
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       executablePath: process.env.VERCEL ? '/usr/bin/google-chrome-stable' : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       headless: true,
       timeout: 60000,
     });
+    console.log('Browser launched');
     const page = await browser.newPage();
-    page.on('console', (msg) => console.log('PAGE LOG:', msg.text()));
-    page.on('pageerror', (err) => console.log('PAGE ERROR:', err.toString()));
+    console.log('Navigating to page...');
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+    console.log('Page loaded');
 
     const phones = await page.evaluate(() => {
       const phoneRegex = /\(?\d{2}\)?\s?\d{4,5}-?\d{4}/g;
       const matches = document.body && document.body.innerText.match(phoneRegex);
       return matches ? Array.from(matches) : [];
     });
+    console.log(`Phones found: ${phones.length}`);
 
-    let whatsAppLinks = await page.evaluate(() => {
-        const links = Array.from(document.querySelectorAll('a[href^="https://api.whatsapp.com"]')) as HTMLAnchorElement[];
-        return links.map((link) => {
-            const url = new URL(link.href);
-            const phone = url.searchParams.get('phone');
-            return { link: link.href, phone };
-        });
+    const whatsappLinks = await page.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('a[href^="https://api.whatsapp.com"], a[href^="https://wa.me"]')) as HTMLAnchorElement[];
+      const uniqueLinks = Array.from(new Set(links.map((link) => link.href)));
+      return uniqueLinks.map((link) => ({ link }));
     });
+    console.log(`WhatsApp links found: ${whatsappLinks.length}`);
 
     const emails = await page.evaluate(() => {
       const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
       const matches = document.body.innerText.match(emailRegex);
       return matches ? matches.map(email => email.trim()) : [];
     });
+    console.log(`Emails found: ${emails.length}`);
 
     const socialMedia = await page.evaluate(() => {
       const anchors = Array.from(document.querySelectorAll('a'));
@@ -48,51 +51,21 @@ export async function POST(req: NextRequest) {
       };
       return socialLinks;
     });
+    console.log(`Social media links found: ${JSON.stringify(socialMedia)}`);
 
     const title = await page.title();
-
-    if (phones.length === 0 && emails.length === 0) {
-      const contactLink = await page.evaluate(() => {
-        const contactAnchor = Array.from(document.querySelectorAll('a')).find((anchor) =>
-          anchor.href.includes('fale-conosco') ||
-          anchor.href.includes('contact')
-        );
-        return contactAnchor ? contactAnchor.href : null;
-      });
-
-      if (contactLink) {
-        await page.goto(contactLink, { waitUntil: 'networkidle2', timeout: 60000 });
-
-        const phones = await page.evaluate(() => {
-          const phoneRegex = /\(?\d{2}\)?\s?\d{4,5}-?\d{4}/g;
-          const matches = document.body && document.body.innerText.match(phoneRegex);
-          return matches ? Array.from(matches) : [];
-        });
-
-        const whatsAppLinks = await page.evaluate(() => {
-          const links = document.querySelectorAll('a[href^="https://api.whatsapp.com"]');
-          return links ? Array.from(links, (link: Element) => {
-            const anchor = link as HTMLAnchorElement;
-            const url = new URL(anchor.href);
-            const phone = url.searchParams.get('phone');
-            return { link: anchor.href, phone };
-          }) : [];
-        });
-
-        const emails = await page.evaluate(() => {
-          const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
-          const matches = document.body.innerText.match(emailRegex);
-          return matches ? Array.from(matches) : [];
-        });
-      }
-    }
+    console.log(`Page title: ${title}`);
 
     await browser.close();
 
-    return NextResponse.json({ phones, whatsAppLinks, emails, socialMedia, title });
+    return NextResponse.json({ phones, whatsappLinks, emails, socialMedia, title });
 
   } catch (error: any) {
     console.error('Error:', error.message);
-    return NextResponse.error();
+    return NextResponse.json({
+      status: 'error',
+      message: 'A URL é inválida ou está fora do ar. Por favor, tente novamente.',
+      error: error.message,
+    }, { status: 500 });
   }
 }
