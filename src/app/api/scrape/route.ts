@@ -7,8 +7,7 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
-    // Defina o caminho do executável explicitamente
-    const executablePath = process.env.CHROME_EXECUTABLE_PATH || await chromium.executablePath;
+    const executablePath = await chromium.executablePath || '/var/task/node_modules/chrome-aws-lambda/bin/chromium';
 
     if (!executablePath) {
       throw new Error('Could not find Chromium executable path.');
@@ -18,9 +17,10 @@ export async function POST(req: NextRequest) {
 
     console.log('Launching browser...');
     const browser = await puppeteer.launch({
-      args: chromium.args,
+      args: [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
       executablePath: executablePath,
-      headless: chromium.headless,
+      headless: true,
+      defaultViewport: chromium.defaultViewport,
     });
     console.log('Browser launched');
     
