@@ -4,10 +4,13 @@ const path = require('path');
 
 (async () => {
   try {
+    console.log('Starting Chrome installation...');
     const executablePath = await chrome.executablePath;
+
     if (!executablePath) {
       throw new Error('Executable path not found.');
     }
+
     console.log(`Chromium executable path: ${executablePath}`);
 
     const targetPath = '/var/task/.next/server/app/api/bin';

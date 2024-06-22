@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import chromium from 'chrome-aws-lambda';
+import puppeteer from 'puppeteer-core';
+import chrome from 'chrome-aws-lambda';
 
 export async function POST(req: NextRequest) {
   let browser = null;
@@ -9,15 +10,14 @@ export async function POST(req: NextRequest) {
 
     console.log('Launching browser...');
 
-    const executablePath = '/var/task/.next/server/app/api/bin/chromium.br';
+    const executablePath = await chrome.executablePath;
     console.log(`Chromium executable path: ${executablePath}`);
 
-    browser = await chromium.puppeteer.launch({
-      args: chromium.args,
+    browser = await puppeteer.launch({
+      args: chrome.args,
       executablePath: executablePath,
-      headless: chromium.headless,
+      headless: chrome.headless,
     });
-
     console.log('Browser launched');
 
     const page = await browser.newPage();
