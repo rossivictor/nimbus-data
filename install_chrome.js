@@ -1,7 +1,9 @@
-const puppeteer = require('puppeteer-core');
+import { install } from 'chrome-aws-lambda';
 
 (async () => {
-  const browserFetcher = puppeteer.createBrowserFetcher();
-  const revisionInfo = await browserFetcher.download('901912'); // Revisão suportada do Chromium para Puppeteer 10.4.0
-  console.log('Downloaded Chrome revision', revisionInfo.revision);
+  await install({
+    cacheDir: '/tmp/puppeteer_cache',
+  });
+
+  console.log('Chromium downloaded and configured successfully');
 })();
