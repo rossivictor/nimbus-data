@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer-core';
-const chromium = require('chrome-aws-lambda');
+import chromium from 'chrome-aws-lambda';
 
 export async function POST(req: NextRequest) {
   let browser = null;
@@ -11,12 +10,14 @@ export async function POST(req: NextRequest) {
     console.log('Launching browser...');
 
     const executablePath = await chromium.executablePath;
-    browser = await puppeteer.launch({
+    console.log(`Chromium executable path: ${executablePath}`);
+
+    browser = await chromium.puppeteer.launch({
       args: chromium.args,
-      executablePath,
+      executablePath: executablePath || process.env.CHROME_EXECUTABLE_PATH,
       headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport,
     });
+
     console.log('Browser launched');
 
     const page = await browser.newPage();
@@ -43,18 +44,18 @@ export async function POST(req: NextRequest) {
     const emails = await page.evaluate(() => {
       const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
       const matches = document.body.innerText.match(emailRegex);
-      return matches ? matches.map((email) => email.trim()) : [];
+      return matches ? matches.map(email => email.trim()) : [];
     });
     console.log(`Emails found: ${emails.length}`);
 
     const socialMedia = await page.evaluate(() => {
       const anchors = Array.from(document.querySelectorAll('a'));
       const socialLinks = {
-        facebook: anchors.filter((anchor) => anchor.href.includes('facebook.com')).map((anchor) => anchor.href),
-        instagram: anchors.filter((anchor) => anchor.href.includes('instagram.com')).map((anchor) => anchor.href),
-        linkedin: anchors.filter((anchor) => anchor.href.includes('linkedin.com')).map((anchor) => anchor.href),
-        youtube: anchors.filter((anchor) => anchor.href.includes('youtube.com')).map((anchor) => anchor.href),
-        twitter: anchors.filter((anchor) => anchor.href.includes('twitter.com')).map((anchor) => anchor.href),
+        facebook: anchors.filter(anchor => anchor.href.includes('facebook.com')).map(anchor => anchor.href),
+        instagram: anchors.filter(anchor => anchor.href.includes('instagram.com')).map(anchor => anchor.href),
+        linkedin: anchors.filter(anchor => anchor.href.includes('linkedin.com')).map(anchor => anchor.href),
+        youtube: anchors.filter(anchor => anchor.href.includes('youtube.com')).map(anchor => anchor.href),
+        twitter: anchors.filter(anchor => anchor.href.includes('twitter.com')).map(anchor => anchor.href),
       };
       return socialLinks;
     });
@@ -66,18 +67,16 @@ export async function POST(req: NextRequest) {
     await browser.close();
 
     return NextResponse.json({ phones, whatsappLinks, emails, socialMedia, title });
+
   } catch (error: any) {
     console.error('Error:', error.message);
     if (browser) {
       await browser.close();
     }
-    return NextResponse.json(
-      {
-        status: 'error',
-        message: 'A URL é inválida ou está fora do ar. Por favor, tente novamente.',
-        error: error.message,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      status: 'error',
+      message: 'A URL é inválida ou está fora do ar. Por favor, tente novamente.',
+      error: error.message,
+    }, { status: 500 });
   }
 }
