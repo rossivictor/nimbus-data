@@ -19,7 +19,7 @@ const path = require('path');
     }
 
     const sourcePath = path.resolve(executablePath);
-    const targetFilePath = path.join(targetPath, 'chromium.br');
+    const targetFilePath = path.join(targetPath, 'chromium');
 
     copyFileSync(sourcePath, targetFilePath);
     console.log(`Chromium copied to ${targetFilePath}`);
