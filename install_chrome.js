@@ -3,17 +3,25 @@ const { existsSync, mkdirSync, copyFileSync } = require('fs');
 const path = require('path');
 
 (async () => {
-  const executablePath = await chrome.executablePath;
-  console.log(`Chromium executable path: ${executablePath}`);
+  try {
+    const executablePath = await chrome.executablePath;
+    if (!executablePath) {
+      throw new Error('Executable path not found.');
+    }
+    console.log(`Chromium executable path: ${executablePath}`);
 
-  const targetPath = '/var/task/.next/server/app/api/bin';
-  if (!existsSync(targetPath)) {
-    mkdirSync(targetPath, { recursive: true });
+    const targetPath = '/var/task/.next/server/app/api/bin';
+    if (!existsSync(targetPath)) {
+      mkdirSync(targetPath, { recursive: true });
+    }
+
+    const sourcePath = path.resolve(executablePath);
+    const targetFilePath = path.join(targetPath, 'chromium.br');
+
+    copyFileSync(sourcePath, targetFilePath);
+    console.log(`Chromium copied to ${targetFilePath}`);
+  } catch (error) {
+    console.error('Error during installation:', error);
+    process.exit(1);
   }
-
-  const sourcePath = path.resolve(executablePath);
-  const targetFilePath = path.join(targetPath, 'chromium.br');
-
-  copyFileSync(sourcePath, targetFilePath);
-  console.log(`Chromium copied to ${targetFilePath}`);
 })();
