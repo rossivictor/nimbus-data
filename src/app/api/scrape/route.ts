@@ -11,8 +11,7 @@ export async function POST(req: NextRequest) {
 
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
-      cache: '/tmp/puppeteer_cache'
+      headless: true
     });
     console.log('Browser launched');
 
