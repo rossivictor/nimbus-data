@@ -7,6 +7,12 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
+    // Instalar o Chrome no código, se necessário
+    await puppeteer.launch().then(async browser => {
+      console.log('Installing Chrome...');
+      await browser.close();
+    });
+
     console.log('Launching browser...');
     const executablePath = puppeteer.executablePath();
     console.log(`Chromium executable path: ${executablePath}`);
@@ -15,6 +21,7 @@ export async function POST(req: NextRequest) {
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       executablePath: executablePath,
       headless: true,
+      cache: '/tmp/puppeteer_cache'
     });
     console.log('Browser launched');
 
