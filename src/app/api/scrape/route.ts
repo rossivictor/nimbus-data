@@ -9,12 +9,12 @@ export async function POST(req: NextRequest) {
 
     console.log('Launching browser...');
 
-    const executablePath = await chromium.executablePath;
+    const executablePath = '/var/task/.next/server/app/api/bin/chromium.br';
     console.log(`Chromium executable path: ${executablePath}`);
 
     browser = await chromium.puppeteer.launch({
       args: chromium.args,
-      executablePath: executablePath || process.env.CHROME_EXECUTABLE_PATH,
+      executablePath: executablePath,
       headless: chromium.headless,
     });
 
