@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import chromium from 'chrome-aws-lambda';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 
 export async function POST(req: NextRequest) {
   let browser = null;
@@ -8,18 +7,10 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     console.log(`URL recebida: ${url}`);
 
-    const executablePath = await chromium.executablePath;
-    console.log(`Chromium executable path: ${executablePath}`);
-
-    if (!executablePath) {
-      throw new Error('Could not find Chromium executable path.');
-    }
-
     console.log('Launching browser...');
     browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: executablePath,
-      headless: chromium.headless,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: true,
     });
     console.log('Browser launched');
 
