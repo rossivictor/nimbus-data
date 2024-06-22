@@ -1,21 +1,19 @@
-const { install } = require('chrome-aws-lambda');
-const { existsSync, mkdirSync } = require('fs');
+const chrome = require('chrome-aws-lambda');
+const { existsSync, mkdirSync, copyFileSync } = require('fs');
 const path = require('path');
 
 (async () => {
-  const executablePath = await install();
-  console.log(`Chromium downloaded and configured successfully at ${executablePath}`);
+  const executablePath = await chrome.executablePath;
+  console.log(`Chromium executable path: ${executablePath}`);
 
-  const binDir = path.dirname(executablePath);
   const targetPath = '/var/task/.next/server/app/api/bin';
-
   if (!existsSync(targetPath)) {
     mkdirSync(targetPath, { recursive: true });
   }
 
-  // Copy Chromium to the target directory
-  const { copyFileSync } = require('fs');
-  copyFileSync(executablePath, path.join(targetPath, 'chromium.br'));
+  const sourcePath = path.resolve(executablePath);
+  const targetFilePath = path.join(targetPath, 'chromium.br');
 
-  console.log(`Chromium copied to ${targetPath}`);
+  copyFileSync(sourcePath, targetFilePath);
+  console.log(`Chromium copied to ${targetFilePath}`);
 })();
