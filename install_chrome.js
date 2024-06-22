@@ -1,9 +1,10 @@
-const { install } = require('chrome-aws-lambda');
+const chromium = require('chrome-aws-lambda');
 
 (async () => {
-  await install({
-    cacheDir: '/tmp/puppeteer_cache',
-  });
-
-  console.log('Chromium downloaded and configured successfully');
+  try {
+    await chromium.executablePath;
+    console.log('Chromium downloaded and configured successfully');
+  } catch (error) {
+    console.error('Error downloading Chromium:', error);
+  }
 })();
