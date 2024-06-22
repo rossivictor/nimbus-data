@@ -1,4 +1,4 @@
-import { install } from 'chrome-aws-lambda';
+const { install } = require('chrome-aws-lambda');
 
 (async () => {
   await install({
