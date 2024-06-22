@@ -8,8 +8,12 @@ export async function POST(req: NextRequest) {
     console.log(`URL recebida: ${url}`);
 
     console.log('Launching browser...');
+    const executablePath = puppeteer.executablePath();
+    console.log(`Chromium executable path: ${executablePath}`);
+
     browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      executablePath: executablePath,
       headless: true,
     });
     console.log('Browser launched');
